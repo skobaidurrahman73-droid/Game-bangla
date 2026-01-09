@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>3D SNAKE PRO | SOUND & AD</title>
+    <style>
+        :root { --neon: #39ff14; --cyan: #00f2fe; --bg: #050505; }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        .game-container { background: #111; padding: 15px; border-radius: 25px; border-left: 4px solid var(--cyan); width: 320px; box-sizing: border-box; }
+        .settings-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 12px; }
+        .settings-panel label { font-size: 9px; color: var(--cyan); display: block; }
+        input[type=range] { width: 100%; accent-color: var(--neon); height: 4px; }
+        #canvas-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto; }
+        canvas { background: #000; border-radius: 15px; border: 1px solid #222; display: block; }
+        #over-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; z-index: 10; padding: 10px; }
+        video { width: 100%; border-radius: 10px; margin-bottom: 15px; }
+        .retry-btn { padding: 12px 25px; background: var(--cyan); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 50px; }
+        .controls { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 8px; margin-top: 15px; justify-content: center; }
+        .btn { width: 52px; height: 52px; background: #1a1a1a; border: 1px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 20px; }
+        .up { grid-area: up; } .left { grid-area: left; } .right { grid-area: right; } .down { grid-area: down; }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+        <span style="font-size: 9px; color: var(--cyan);">PRO-APPS v6.0</span>
+        <div style="color: var(--neon); font-weight: bold;">SC: <span id="s-val">0</span></div>
+    </div>
+
+    <div class="settings-panel">
+        <div><label>SPEED: <span id="sp-txt">50</span></label><input type="range" id="speedRange" min="1" max="100" value="50" oninput="updateSpeed(this.value)"></div>
+        <div><label>VOL: <span id="vol-txt">50</span>%</label><input type="range" id="volRange" min="0" max="100" value="50" oninput="updateVolume(this.value)"></div>
+    </div>
+    
+    <div id="canvas-wrap">
+        <canvas id="snakeGame" width="280" height="280"></canvas>
+        <div id="over-screen">
+            <video id="endVideo" playsinline><source src="video.mp4" type="video/mp4"></video>
+            <button class="retry-btn" onclick="init()">RESTART</button>
+        </div>
+    </div>
+
+    <audio id="scoreSound"><source src="point.mp3" type="audio/mpeg"></audio>
+
+    <div class="controls">
+        <div class="btn up" onclick="move('UP')">▲</div>
+        <div class="btn left" onclick="move('LEFT')">◀</div>
+        <div class="btn right" onclick="move('RIGHT')">▶</div>
+        <div class="btn down" onclick="move('DOWN')">▼</div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById("snakeGame"), ctx = canvas.getContext("2d"), box = 20;
+    let score, snake, food, d, gameLoop, currentSpeed = 50;
+    const v = document.getElementById('endVideo'), s = document.getElementById('scoreSound');
+
+    function updateVolume(val) { v.volume = s.volume = val / 100; document.getElementById('vol-txt').innerText = val; }
+    function updateSpeed(val) { currentSpeed = val; document.getElementById('sp-txt').innerText = val; if(d !== "") restartLoop(); }
+    function restartLoop() { clearInterval(gameLoop); gameLoop = setInterval(draw, 220 - (currentSpeed * 1.8)); }
+    v.onended = () => window.open("https://www.effectivegatecpm.com/cw7zme40?key=b2f6a0eee9615ab068e8d9750dd0fab4", "_blank");
+
+    function init() {
+        score = 0; document.getElementById("s-val").innerText = score;
+        snake = [{x: 140, y: 140}]; d = ""; spawnFood();
+        document.getElementById('over-screen').style.display = 'none';
+        v.pause(); v.currentTime = 0; restartLoop();
+    }
+
+    function spawnFood() { food = { x: Math.floor(Math.random() * 14) * box, y: Math.floor(Math.random() * 14) * box }; }
+    function move(dir) { if(dir=="LEFT" && d!="RIGHT") d="LEFT"; if(dir=="UP" && d!="DOWN") d="UP"; if(dir=="RIGHT" && d!="LEFT") d="RIGHT"; if(dir=="DOWN" && d!="UP") d="DOWN"; }
+
+    function draw() {
+        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(food.x+10, food.y+10, 8, 0, Math.PI*2); ctx.fill();
+        snake.forEach((seg, i) => {
+            ctx.fillStyle = i === 0 ? "#00f2fe" : "rgba(0, 242, 254, 0.4)";
+            ctx.beginPath(); ctx.arc(seg.x+10, seg.y+10, 9, 0, Math.PI*2); ctx.fill();
+        });
+        let hX = snake[0].x, hY = snake[0].y;
+        if(d=="LEFT") hX-=box; if(d=="UP") hY-=box; if(d=="RIGHT") hX+=box; if(d=="DOWN") hY+=box;
+        if(hX < 0) hX = 260; else if(hX >= 280) hX = 0; if(hY < 0) hY = 260; else if(hY >= 280) hY = 0;
+        if(hX == food.x && hY == food.y) {
+            score++; document.getElementById("s-val").innerText = score;
+            s.currentTime = 0; s.play(); spawnFood();
+        } else if(d != "") snake.pop();
+        let nH = {x: hX, y: hY};
+        if(d != "" && collision(nH, snake)) { clearInterval(gameLoop); document.getElementById('over-screen').style.display = 'flex'; v.play(); return; }
+        if(d != "") snake.unshift(nH);
+    }
+
+    function collision(head, array) { for(let i=0; i<array.length; i++) if(head.x==array[i].x && head.y==array[i].y) return true; return false; }
+    window.onload = init;
+</script>
+</body>
+</html>
