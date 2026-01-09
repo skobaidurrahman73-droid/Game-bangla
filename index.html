@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D SNAKE PRO | SOUND & AD</title>
+    <title>3D SNAKE | DOUBLE CLICK RESTART</title>
     <style>
         :root { --neon: #39ff14; --cyan: #00f2fe; --bg: #050505; }
         body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
@@ -15,7 +15,7 @@
         canvas { background: #000; border-radius: 15px; border: 1px solid #222; display: block; }
         #over-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; z-index: 10; padding: 10px; }
         video { width: 100%; border-radius: 10px; margin-bottom: 15px; }
-        .retry-btn { padding: 12px 25px; background: var(--cyan); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 50px; }
+        .retry-btn { padding: 12px 25px; background: var(--cyan); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 50px; text-transform: uppercase; }
         .controls { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 8px; margin-top: 15px; justify-content: center; }
         .btn { width: 52px; height: 52px; background: #1a1a1a; border: 1px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 20px; }
         .up { grid-area: up; } .left { grid-area: left; } .right { grid-area: right; } .down { grid-area: down; }
@@ -25,7 +25,7 @@
 
 <div class="game-container">
     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-        <span style="font-size: 9px; color: var(--cyan);">PRO-APPS v6.0</span>
+        <span style="font-size: 9px; color: var(--cyan); font-weight: bold;">PRO-APPS v8.0</span>
         <div style="color: var(--neon); font-weight: bold;">SC: <span id="s-val">0</span></div>
     </div>
 
@@ -38,7 +38,8 @@
         <canvas id="snakeGame" width="280" height="280"></canvas>
         <div id="over-screen">
             <video id="endVideo" playsinline><source src="video.mp4" type="video/mp4"></video>
-            <button class="retry-btn" onclick="init()">RESTART</button>
+            <div id="status-msg" style="color:var(--neon); font-size:10px; margin-bottom:5px;">WATCH VIDEO TO RESTART</div>
+            <button class="retry-btn" id="r-btn" onclick="handleRestart()">GET ACCESS</button>
         </div>
     </div>
 
@@ -55,12 +56,29 @@
 <script>
     const canvas = document.getElementById("snakeGame"), ctx = canvas.getContext("2d"), box = 20;
     let score, snake, food, d, gameLoop, currentSpeed = 50;
-    const v = document.getElementById('endVideo'), s = document.getElementById('scoreSound');
+    let clickCount = 0; // ক্লিক গণনার জন্য
+    const v = document.getElementById('endVideo'), s = document.getElementById('scoreSound'), rBtn = document.getElementById('r-btn'), msg = document.getElementById('status-msg');
+    const adLink = "https://www.effectivegatecpm.com/cw7zme40?key=b2f6a0eee9615ab068e8d9750dd0fab4";
 
     function updateVolume(val) { v.volume = s.volume = val / 100; document.getElementById('vol-txt').innerText = val; }
     function updateSpeed(val) { currentSpeed = val; document.getElementById('sp-txt').innerText = val; if(d !== "") restartLoop(); }
     function restartLoop() { clearInterval(gameLoop); gameLoop = setInterval(draw, 220 - (currentSpeed * 1.8)); }
-    v.onended = () => window.open("https://www.effectivegatecpm.com/cw7zme40?key=b2f6a0eee9615ab068e8d9750dd0fab4", "_blank");
+
+    function handleRestart() {
+        if (clickCount === 0) {
+            // প্রথম ক্লিক: অ্যাড ওপেন হবে
+            window.open(adLink, "_blank");
+            clickCount = 1;
+            rBtn.innerText = "START GAME"; // বাটনের লেখা বদলে যাবে
+            msg.innerText = "ACCESS GRANTED! CLICK BELOW";
+        } else {
+            // দ্বিতীয় ক্লিক: গেম শুরু হবে
+            clickCount = 0;
+            rBtn.innerText = "GET ACCESS";
+            msg.innerText = "WATCH VIDEO TO RESTART";
+            init();
+        }
+    }
 
     function init() {
         score = 0; document.getElementById("s-val").innerText = score;
@@ -76,8 +94,10 @@
         ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(food.x+10, food.y+10, 8, 0, Math.PI*2); ctx.fill();
         snake.forEach((seg, i) => {
-            ctx.fillStyle = i === 0 ? "#00f2fe" : "rgba(0, 242, 254, 0.4)";
-            ctx.beginPath(); ctx.arc(seg.x+10, seg.y+10, 9, 0, Math.PI*2); ctx.fill();
+            let g = ctx.createRadialGradient(seg.x+10, seg.y+10, 2, seg.x+10, seg.y+10, 12);
+            if(i === 0) { g.addColorStop(0, "#fff"); g.addColorStop(1, "#00f2fe"); }
+            else { g.addColorStop(0, "#00f2fe"); g.addColorStop(1, "#003a45"); }
+            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(seg.x+10, seg.y+10, 9, 0, Math.PI*2); ctx.fill();
         });
         let hX = snake[0].x, hY = snake[0].y;
         if(d=="LEFT") hX-=box; if(d=="UP") hY-=box; if(d=="RIGHT") hX+=box; if(d=="DOWN") hY+=box;
