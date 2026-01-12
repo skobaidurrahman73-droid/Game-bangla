@@ -3,47 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D SNAKE | DOUBLE CLICK RESTART</title>
+    <title>SNAKE PRO | ULTIMATE</title>
     <style>
-        :root { --neon: #39ff14; --cyan: #00f2fe; --bg: #050505; }
-        body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
-        .game-container { background: #111; padding: 15px; border-radius: 25px; border-left: 4px solid var(--cyan); width: 320px; box-sizing: border-box; }
-        .settings-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 12px; }
-        .settings-panel label { font-size: 9px; color: var(--cyan); display: block; }
-        input[type=range] { width: 100%; accent-color: var(--neon); height: 4px; }
-        #canvas-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto; }
-        canvas { background: #000; border-radius: 15px; border: 1px solid #222; display: block; }
-        #over-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 15px; z-index: 10; padding: 10px; }
-        video { width: 100%; border-radius: 10px; margin-bottom: 15px; }
-        .retry-btn { padding: 12px 25px; background: var(--cyan); color: #000; border: none; font-weight: bold; cursor: pointer; border-radius: 50px; text-transform: uppercase; }
-        .controls { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 8px; margin-top: 15px; justify-content: center; }
-        .btn { width: 52px; height: 52px; background: #1a1a1a; border: 1px solid var(--cyan); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 20px; }
+        :root { --neon: #39ff14; --cyan: #00f2fe; --bg: #0a0a0c; --card: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; background: var(--bg); color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .game-container { background: #16161a; padding: 20px; border-radius: 30px; border: 2px solid rgba(0, 242, 254, 0.3); width: 340px; box-shadow: 0 0 25px rgba(0, 242, 254, 0.15); text-align: center; }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .score-box { background: rgba(57, 255, 20, 0.1); padding: 5px 15px; border-radius: 10px; border: 1px solid var(--neon); color: var(--neon); font-weight: bold; font-size: 18px; }
+        .settings-panel { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; background: var(--card); padding: 10px; border-radius: 15px; }
+        .settings-panel label { font-size: 10px; color: var(--cyan); text-transform: uppercase; letter-spacing: 1px; }
+        input[type=range] { width: 100%; accent-color: var(--cyan); cursor: pointer; }
+        #canvas-wrap { position: relative; width: 280px; height: 280px; margin: 0 auto; border-radius: 15px; overflow: hidden; box-shadow: 0 0 15px rgba(0,0,0,0.5); border: 1px solid #222; }
+        canvas { background: #000; display: block; }
+        #over-screen { position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        video { width: 90%; border-radius: 10px; border: 1px solid var(--cyan); margin-bottom: 15px; }
+        .retry-btn { padding: 12px 30px; background: linear-gradient(45deg, var(--cyan), #0097a7); color: #000; border: none; font-weight: 900; cursor: pointer; border-radius: 50px; transition: 0.3s; }
+        .controls { display: grid; grid-template-areas: ". up ." "left . right" ". down ."; gap: 12px; margin-top: 20px; justify-content: center; }
+        .btn { width: 55px; height: 55px; background: #222; border: 1px solid var(--cyan); border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 24px; box-shadow: 0 4px 0 #005f6b; transition: 0.1s; }
+        .btn:active { transform: translateY(3px); box-shadow: none; }
+        .admin-card { margin-top: 25px; padding: 12px; background: var(--card); border-radius: 20px; border: 1px solid rgba(0, 242, 254, 0.2); display: flex; align-items: center; gap: 15px; text-align: left; }
+        .admin-img { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--cyan); object-fit: cover; }
+        .admin-info h4 { margin: 0; color: var(--cyan); font-size: 16px; }
+        .admin-info p { margin: 0; font-size: 11px; opacity: 0.7; letter-spacing: 0.5px; }
         .up { grid-area: up; } .left { grid-area: left; } .right { grid-area: right; } .down { grid-area: down; }
     </style>
 </head>
 <body>
 
 <div class="game-container">
-    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-        <span style="font-size: 9px; color: var(--cyan); font-weight: bold;">PRO-APPS v8.0</span>
-        <div style="color: var(--neon); font-weight: bold;">SC: <span id="s-val">0</span></div>
+    <div class="status-bar">
+        <span style="font-size: 10px; color: var(--cyan); font-weight: bold; letter-spacing: 2px;">ULTIMATE SNAKE</span>
+        <div class="score-box">Pts: <span id="s-val">0</span></div>
     </div>
 
     <div class="settings-panel">
-        <div><label>SPEED: <span id="sp-txt">50</span></label><input type="range" id="speedRange" min="1" max="100" value="50" oninput="updateSpeed(this.value)"></div>
-        <div><label>VOL: <span id="vol-txt">50</span>%</label><input type="range" id="volRange" min="0" max="100" value="50" oninput="updateVolume(this.value)"></div>
+        <div><label>Speed: <span id="sp-txt">50</span></label><input type="range" id="speedRange" min="10" max="100" value="50" oninput="updateSpeed(this.value)"></div>
+        <div><label>Audio: <span id="vol-txt">50</span>%</label><input type="range" id="volRange" min="0" max="100" value="50" oninput="updateVolume(this.value)"></div>
     </div>
     
     <div id="canvas-wrap">
         <canvas id="snakeGame" width="280" height="280"></canvas>
         <div id="over-screen">
-            <video id="endVideo" playsinline><source src="video.mp4" type="video/mp4"></video>
-            <div id="status-msg" style="color:var(--neon); font-size:10px; margin-bottom:5px;">WATCH VIDEO TO RESTART</div>
-            <button class="retry-btn" id="r-btn" onclick="handleRestart()">GET ACCESS</button>
+            <video id="endVideo" playsinline loop muted><source src="video.mp4" type="video/mp4"></video>
+            <div id="status-msg" style="color:var(--neon); font-size:12px; margin-bottom:10px; font-weight:bold;">GAME OVER</div>
+            <button class="retry-btn" id="r-btn" onclick="handleRestart()">RESTART GAME</button>
         </div>
     </div>
-
-    <audio id="scoreSound"><source src="point.mp3" type="audio/mpeg"></audio>
 
     <div class="controls">
         <div class="btn up" onclick="move('UP')">▲</div>
@@ -51,31 +57,38 @@
         <div class="btn right" onclick="move('RIGHT')">▶</div>
         <div class="btn down" onclick="move('DOWN')">▼</div>
     </div>
+
+    <div class="admin-card">
+        <img src="5912-ig-thumbnail-161-161.png" alt="Admin" class="admin-img">
+        <div class="admin-info">
+            <h4>Obaidur Rahman</h4>
+            <p>Founder & Developer</p>
+        </div>
+    </div>
 </div>
+
+<audio id="scoreSound"><source src="point.mp3" type="audio/mpeg"></audio>
 
 <script>
     const canvas = document.getElementById("snakeGame"), ctx = canvas.getContext("2d"), box = 20;
     let score, snake, food, d, gameLoop, currentSpeed = 50;
-    let clickCount = 0; // ক্লিক গণনার জন্য
+    let clickCount = 0;
     const v = document.getElementById('endVideo'), s = document.getElementById('scoreSound'), rBtn = document.getElementById('r-btn'), msg = document.getElementById('status-msg');
     const adLink = "https://www.effectivegatecpm.com/cw7zme40?key=b2f6a0eee9615ab068e8d9750dd0fab4";
 
     function updateVolume(val) { v.volume = s.volume = val / 100; document.getElementById('vol-txt').innerText = val; }
     function updateSpeed(val) { currentSpeed = val; document.getElementById('sp-txt').innerText = val; if(d !== "") restartLoop(); }
-    function restartLoop() { clearInterval(gameLoop); gameLoop = setInterval(draw, 220 - (currentSpeed * 1.8)); }
+    function restartLoop() { clearInterval(gameLoop); gameLoop = setInterval(draw, 200 - (currentSpeed * 1.5)); }
 
     function handleRestart() {
         if (clickCount === 0) {
-            // প্রথম ক্লিক: অ্যাড ওপেন হবে
             window.open(adLink, "_blank");
             clickCount = 1;
-            rBtn.innerText = "START GAME"; // বাটনের লেখা বদলে যাবে
-            msg.innerText = "ACCESS GRANTED! CLICK BELOW";
+            rBtn.innerText = "PLAY NOW";
+            msg.innerText = "ACCESS GRANTED!";
         } else {
-            // দ্বিতীয় ক্লিক: গেম শুরু হবে
             clickCount = 0;
-            rBtn.innerText = "GET ACCESS";
-            msg.innerText = "WATCH VIDEO TO RESTART";
+            rBtn.innerText = "RESTART GAME";
             init();
         }
     }
@@ -84,30 +97,45 @@
         score = 0; document.getElementById("s-val").innerText = score;
         snake = [{x: 140, y: 140}]; d = ""; spawnFood();
         document.getElementById('over-screen').style.display = 'none';
-        v.pause(); v.currentTime = 0; restartLoop();
+        v.pause(); restartLoop();
     }
 
     function spawnFood() { food = { x: Math.floor(Math.random() * 14) * box, y: Math.floor(Math.random() * 14) * box }; }
     function move(dir) { if(dir=="LEFT" && d!="RIGHT") d="LEFT"; if(dir=="UP" && d!="DOWN") d="UP"; if(dir=="RIGHT" && d!="LEFT") d="RIGHT"; if(dir=="DOWN" && d!="UP") d="DOWN"; }
 
     function draw() {
-        ctx.fillStyle = "black"; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(food.x+10, food.y+10, 8, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.strokeStyle = "rgba(255,255,255,0.05)";
+        for(let i=0; i<canvas.width; i+=box) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+        for(let j=0; j<canvas.height; j+=box) { ctx.beginPath(); ctx.moveTo(0,j); ctx.lineTo(canvas.width,j); ctx.stroke(); }
+
+        ctx.shadowBlur = 15; ctx.shadowColor = "#39ff14";
+        ctx.fillStyle = "#39ff14"; ctx.beginPath(); ctx.arc(food.x+10, food.y+10, 7, 0, Math.PI*2); ctx.fill();
+        ctx.shadowBlur = 0;
+
         snake.forEach((seg, i) => {
-            let g = ctx.createRadialGradient(seg.x+10, seg.y+10, 2, seg.x+10, seg.y+10, 12);
-            if(i === 0) { g.addColorStop(0, "#fff"); g.addColorStop(1, "#00f2fe"); }
-            else { g.addColorStop(0, "#00f2fe"); g.addColorStop(1, "#003a45"); }
-            ctx.fillStyle = g; ctx.beginPath(); ctx.arc(seg.x+10, seg.y+10, 9, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = i === 0 ? 10 : 0; ctx.shadowColor = "#00f2fe";
+            let gradient = ctx.createLinearGradient(seg.x, seg.y, seg.x+box, seg.y+box);
+            gradient.addColorStop(0, i === 0 ? "#00f2fe" : "#005f6b");
+            gradient.addColorStop(1, i === 0 ? "#4facfe" : "#003a45");
+            ctx.fillStyle = gradient;
+            ctx.beginPath(); ctx.roundRect(seg.x+2, seg.y+2, box-4, box-4, 5); ctx.fill();
         });
+
         let hX = snake[0].x, hY = snake[0].y;
         if(d=="LEFT") hX-=box; if(d=="UP") hY-=box; if(d=="RIGHT") hX+=box; if(d=="DOWN") hY+=box;
-        if(hX < 0) hX = 260; else if(hX >= 280) hX = 0; if(hY < 0) hY = 260; else if(hY >= 280) hY = 0;
+        if(hX < 0) hX = 260; else if(hX >= 280) hX = 0;
+        if(hY < 0) hY = 260; else if(hY >= 280) hY = 0;
+
         if(hX == food.x && hY == food.y) {
             score++; document.getElementById("s-val").innerText = score;
             s.currentTime = 0; s.play(); spawnFood();
         } else if(d != "") snake.pop();
+
         let nH = {x: hX, y: hY};
-        if(d != "" && collision(nH, snake)) { clearInterval(gameLoop); document.getElementById('over-screen').style.display = 'flex'; v.play(); return; }
+        if(d != "" && collision(nH, snake)) { 
+            clearInterval(gameLoop); document.getElementById('over-screen').style.display = 'flex'; v.play(); return; 
+        }
         if(d != "") snake.unshift(nH);
     }
 
