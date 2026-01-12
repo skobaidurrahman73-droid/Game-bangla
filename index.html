@@ -45,7 +45,7 @@
     <div id="canvas-wrap">
         <canvas id="snakeGame" width="280" height="280"></canvas>
         <div id="over-screen">
-            <video id="endVideo" playsinline loop muted><source src="video.mp4" type="video/mp4"></video>
+            <video id="endVideo" playsinline loop><source src="video.mp4" type="video/mp4"></video>
             <div id="status-msg" style="color:var(--neon); font-size:12px; margin-bottom:10px; font-weight:bold;">GAME OVER</div>
             <button class="retry-btn" id="r-btn" onclick="handleRestart()">RESTART GAME</button>
         </div>
@@ -76,7 +76,13 @@
     const v = document.getElementById('endVideo'), s = document.getElementById('scoreSound'), rBtn = document.getElementById('r-btn'), msg = document.getElementById('status-msg');
     const adLink = "https://www.effectivegatecpm.com/cw7zme40?key=b2f6a0eee9615ab068e8d9750dd0fab4";
 
-    function updateVolume(val) { v.volume = s.volume = val / 100; document.getElementById('vol-txt').innerText = val; }
+    function updateVolume(val) { 
+        let vol = val / 100;
+        v.volume = vol; 
+        s.volume = vol; 
+        document.getElementById('vol-txt').innerText = val; 
+    }
+
     function updateSpeed(val) { currentSpeed = val; document.getElementById('sp-txt').innerText = val; if(d !== "") restartLoop(); }
     function restartLoop() { clearInterval(gameLoop); gameLoop = setInterval(draw, 200 - (currentSpeed * 1.5)); }
 
@@ -97,11 +103,18 @@
         score = 0; document.getElementById("s-val").innerText = score;
         snake = [{x: 140, y: 140}]; d = ""; spawnFood();
         document.getElementById('over-screen').style.display = 'none';
-        v.pause(); restartLoop();
+        v.pause(); v.currentTime = 0; restartLoop();
     }
 
     function spawnFood() { food = { x: Math.floor(Math.random() * 14) * box, y: Math.floor(Math.random() * 14) * box }; }
-    function move(dir) { if(dir=="LEFT" && d!="RIGHT") d="LEFT"; if(dir=="UP" && d!="DOWN") d="UP"; if(dir=="RIGHT" && d!="LEFT") d="RIGHT"; if(dir=="DOWN" && d!="UP") d="DOWN"; }
+    function move(dir) { 
+        if(dir=="LEFT" && d!="RIGHT") d="LEFT"; 
+        if(dir=="UP" && d!="DOWN") d="UP"; 
+        if(dir=="RIGHT" && d!="LEFT") d="RIGHT"; 
+        if(dir=="DOWN" && d!="UP") d="DOWN"; 
+        // ইউজার কন্ট্রোল চাপলে সাউন্ড এনাবেল করার জন্য
+        if(v.muted) v.muted = false;
+    }
 
     function draw() {
         ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -134,7 +147,11 @@
 
         let nH = {x: hX, y: hY};
         if(d != "" && collision(nH, snake)) { 
-            clearInterval(gameLoop); document.getElementById('over-screen').style.display = 'flex'; v.play(); return; 
+            clearInterval(gameLoop); 
+            document.getElementById('over-screen').style.display = 'flex';
+            v.muted = false; // সাউন্ড আনমিউট
+            v.play(); 
+            return; 
         }
         if(d != "") snake.unshift(nH);
     }
